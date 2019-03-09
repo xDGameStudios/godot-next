@@ -60,3 +60,17 @@ static func new_dictionary(p_name: String, p_hint: int = PROPERTY_HINT_NONE, p_h
 
 static func new_resource(p_name: String, p_hint_string: String = "", p_usage: int = PROPERTY_USAGE_DEFAULT) -> PropertyInfo:
 	return load(SELF_PATH).new(p_name, TYPE_OBJECT, PROPERTY_HINT_RESOURCE_TYPE, p_hint_string, p_usage)
+
+##### CUSTOM PROPERTIES #####
+
+static func new_button(p_name: String, p_callback: String, p_group: String = "") -> PropertyInfo:
+	return load(SELF_PATH).new(p_name, TYPE_OBJECT, PROPERTY_HINT_NONE, "$button$%s$%s" % [p_callback, p_group], PROPERTY_USAGE_EDITOR)
+
+static func new_resource_dropdown(p_name: String, p_type: String, p_callback: String, p_group: String = "") -> PropertyInfo:
+	return load(SELF_PATH).new(p_name, TYPE_OBJECT, PROPERTY_HINT_NONE, "$dropdown_res$%s$%s$%s" % [p_type, p_callback, p_group], PROPERTY_USAGE_EDITOR)
+
+static func new_subclass_dropdown(p_name: String, p_type: String, p_callback: String, p_group: String = "") -> PropertyInfo:
+	return load(SELF_PATH).new(p_name, TYPE_OBJECT, PROPERTY_HINT_NONE, "$dropdown_sub$%s$%s$%s" % [p_type, p_callback, p_group], PROPERTY_USAGE_EDITOR)
+
+static func new_type_dropdown(p_name: String, p_group: String = ""):
+	return load(SELF_PATH).new(p_name, TYPE_OBJECT, PROPERTY_HINT_NONE, "$dropdown_type$%s" % p_group, PROPERTY_USAGE_EDITOR)

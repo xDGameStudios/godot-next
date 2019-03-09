@@ -50,9 +50,10 @@ func _get_property_list() -> Array:
 	var list = []
 	if not _type:
 		return list
+	list.append(PropertyInfo.new_resource("_data", "", PROPERTY_USAGE_STORAGE).to_dict())
 	
 	list.append(PropertyInfo.new_group(PREFIX, PREFIX).to_dict())
-	list.append(PropertyInfo.new_array(PREFIX, PROPERTY_HINT_RESOURCE_TYPE, "#%s" % _type.get_path(), PROPERTY_USAGE_DEFAULT).to_dict())
+	list.append(PropertyInfo.new_subclass_dropdown(PREFIX, _type.resource_path, "_on_inspector_add_element").to_dict())
 	if _data.empty():
 		list.append(PropertyInfo.new_nil(PREFIX + EMPTY_ENTRY).to_dict())
 	for an_index in _data.size():
@@ -84,6 +85,11 @@ func clear() -> void:
 ##### PRIVATE METHODS #####
 
 ##### CONNECTIONS #####
+
+func _on_inspector_add_element(p_dropdown: OptionButton) -> void:
+	var index := p_dropdown.get_selected_id()
+	var type: Script = p_dropdown.get_item_metadata(index)
+	_add_element(type)
 
 ##### SETTERS AND GETTERS #####
 

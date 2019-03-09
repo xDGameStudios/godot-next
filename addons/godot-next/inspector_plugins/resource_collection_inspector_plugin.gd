@@ -17,20 +17,88 @@ const ADD_ICON = preload("res://addons/godot-next/icons/icon_add.svg")
 
 ##### VIRTUALS #####
 
-#warning-ignore:unused_argument
 func can_handle(p_object) -> bool:
-	return p_object is ResourceCollection
+	return p_object is Object
 
 #warning-ignore:unused_argument
-func parse_property(p_object, p_type, p_path, p_hint, p_hint_text, p_usage) -> bool:
+#warning-ignore:unused_argument
+func parse_property(p_object, p_type: int, p_path: String, p_hint: int, p_hint_text: String, p_usage: int) -> bool:
+	if not p_hint_text.begins_with("$"):
+		return false
+	var property_data = p_hint_text.lstrip("$").split("$")
 	match p_type:
-		TYPE_ARRAY, TYPE_DICTIONARY:
-			if p_hint == PROPERTY_HINT_RESOURCE_TYPE and p_hint_text.begins_with("#"):
-				add_custom_control(_generate_gui(p_object, p_path, p_hint_text.lstrip("#")))
-				return true
-	return false
+		TYPE_OBJECT:
+			match property_data[0]:
+				"button":
+					var callback = property_data[1]
+					var group = property_data[2]
+					var name = p_path.lstrip(group)
+					var button = _generate_button(p_object, name, callback)
+					add_custom_control(button)
+				"dropdown_res":
+					var type = property_data[1]
+					var callback = property_data[2]
+					var group = property_data[3]
+					var dropdown = _generate_dropdown_res(p_object, type, callback)
+					add_custom_control(dropdown)
+				"dropdown_sub":
+					var type = property_data[1]
+					var callback = property_data[2]
+					var group = property_data[3]
+					var dropdown = _generate_dropdown_sub(p_object, type, callback)
+					add_custom_control(dropdown)
+	return true
 
 ##### PRIVATE METHODS #####
+
+func _generate_button(p_object, p_name: String, p_callback: String) -> Control:
+	var button = Button.new()
+	button.text = p_name
+	button.connect("pressed", p_object, p_callback)
+	return button
+
+func _generate_dropdown_res(p_object, p_type: String, p_callback: String) -> Control:
+	var hbox := HBoxContainer.new()
+	
+	var dropdown := OptionButton.new()
+	var class_type := ClassType.new()
+	var inheritors := _find_inheritors(p_type)
+	for an_index in inheritors.size():
+		class_type.res = inheritors[an_index]
+		dropdown.add_item(class_type.get_name(), an_index)
+		dropdown.set_item_metadata(an_index, inheritors[an_index])
+	dropdown.size_flags_horizontal = HBoxContainer.SIZE_EXPAND_FILL
+	
+	var button = ToolButton.new()
+	button.icon = ADD_ICON
+	button.connect("pressed", p_object, p_callback)
+	
+	hbox.add_child(dropdown)
+	hbox.add_child(button)
+	
+	return hbox
+
+func _generate_dropdown_sub(p_object, p_type: String, p_callback: String) -> Control:
+	var hbox := HBoxContainer.new()
+	
+	var dropdown := OptionButton.new()
+	var class_type := ClassType.new()
+	var inheritors := _find_inheritors(p_type)
+	for an_index in inheritors.size():
+		class_type.res = inheritors[an_index]
+		dropdown.add_item(class_type.get_name(), an_index)
+		dropdown.set_item_metadata(an_index, inheritors[an_index])
+	dropdown.size_flags_horizontal = HBoxContainer.SIZE_EXPAND_FILL
+	
+	
+	var button = ToolButton.new()
+	button.icon = ADD_ICON
+	button.connect("pressed", p_object, p_callback, [dropdown])
+	
+	hbox.add_child(dropdown)
+	hbox.add_child(button)
+	
+	return hbox
 
 func _find_inheritors(p_type_path: String) -> Array:
 	var ct = ClassType.new(p_type_path, true)
@@ -41,48 +109,4 @@ func _find_inheritors(p_type_path: String) -> Array:
 		scripts.append(load(type_map[a_name].path))
 	return scripts
 
-func _generate_gui(p_object: Object, p_path: String, p_type_path: String) -> Control:
-	
-	var hbox := HBoxContainer.new()
-	
-	var elements := _find_inheritors(p_type_path)
-	
-	var dropdown := _generate_type_dropdown(elements)
-	var button := _generate_add_button()
-	
-	#warning-ignore:return_value_discarded
-	button.connect("pressed", self, "_on_add_button_pressed", [p_object, dropdown])
-
-	dropdown.size_flags_horizontal = HBoxContainer.SIZE_EXPAND_FILL
-	
-	hbox.add_child(dropdown)
-	hbox.add_child(button)
-	
-	return hbox
-
-func _generate_type_dropdown(p_elements: Array) -> Control:
-	var dropdown := OptionButton.new()
-	
-	for i in p_elements.size():
-		var ct = ClassType.new(p_elements[i])
-		dropdown.add_item(ct.get_name(), i)
-		dropdown.set_item_metadata(i, p_elements[i])
-	
-	return dropdown
-
-func _generate_add_button() -> Control:
-	var button = ToolButton.new()
-	button.icon = ADD_ICON
-	return button
-
 ##### CONNECTIONS #####
-
-func _on_add_button_pressed(p_object: Object, p_dropdown: OptionButton):
-	var index := p_dropdown.get_selected_id()
-	var script: Script = p_dropdown.get_item_metadata(index) as Script
-	
-	if p_object.has_method("_add_element"):
-		p_object.call("_add_element", script)
-	else:
-		push_warning("The ResourceCollection at <%s> does not implement '_add_element(script: Script)'." % p_object.get_script().resource_path)
-	p_object.property_list_changed_notify()
