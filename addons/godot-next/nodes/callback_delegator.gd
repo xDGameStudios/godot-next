@@ -52,9 +52,13 @@ func _get_property_list() -> Array:
 	return [ PropertyInfo.new_resource("_elements").to_dict() ]
 
 func _ready() -> void:
+	if Engine.editor_hint:
+		return
 	_handle_notification("_ready")
 
 func _enter_tree() -> void:
+	if Engine.editor_hint:
+		return
 	var elements = _elements.get_data().values()
 	for an_element in elements:
 		if not an_element.owner:
@@ -64,21 +68,33 @@ func _enter_tree() -> void:
 	_handle_notification("_enter_tree")
 
 func _exit_tree() -> void:
+	if Engine.editor_hint:
+		return
 	_handle_notification("_enter_tree")
 
 func _process(delta: float) -> void:
+	if Engine.editor_hint:
+		return
 	_handle_notification("_process", delta)
 
 func _physics_process(delta: float) -> void:
+	if Engine.editor_hint:
+		return
 	_handle_notification("_physics_process", delta)
 
 func _input(event: InputEvent) -> void:
+	if Engine.editor_hint:
+		return
 	_handle_notification("_input", event)
 
 func _unhandled_input(event: InputEvent) -> void:
+	if Engine.editor_hint:
+		return
 	_handle_notification("_unhandled_input", event)
 
 func _unhandled_key_input(event: InputEventKey) -> void:
+	if Engine.editor_hint:
+		return
 	_handle_notification("_unhandled_key_input", event)
 
 ##### VIRTUALS #####

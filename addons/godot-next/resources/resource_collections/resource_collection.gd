@@ -35,7 +35,8 @@ func _set(p_property: String, p_value) -> bool:
 			return true
 		_type = p_value
 		_refresh_data()
-		property_list_changed_notify()
+		if Engine.editor_hint:
+			property_list_changed_notify()
 		return true
 	return false
 
@@ -82,7 +83,8 @@ func set_base_type(p_type: Script) -> void:
 	if _type == p_type:
 		return
 	_type = p_type
-	property_list_changed_notify()
+	if Engine.editor_hint:
+		property_list_changed_notify()
 
 func is_type_readonly() -> bool:
 	return _type_readonly
@@ -91,4 +93,5 @@ func set_type_readonly(read_only: bool) -> void:
 	if _type_readonly == read_only:
 		return
 	_type_readonly = read_only
-	property_list_changed_notify()
+	if Engine.editor_hint:
+		property_list_changed_notify()

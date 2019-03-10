@@ -50,7 +50,8 @@ func _get_property_list() -> Array:
 	var list = []
 	if not _type:
 		return list
-	list.append(PropertyInfo.new_resource("_data", "", PROPERTY_USAGE_STORAGE).to_dict())
+	
+	list.append(PropertyInfo.new_array(PREFIX, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE).to_dict())
 	
 	list.append(PropertyInfo.new_group(PREFIX, PREFIX).to_dict())
 	list.append(PropertyInfo.new_subclass_dropdown(PREFIX, _type.resource_path, "_on_inspector_add_element").to_dict())
