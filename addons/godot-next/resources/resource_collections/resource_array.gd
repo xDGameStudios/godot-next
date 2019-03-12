@@ -41,20 +41,21 @@ func _set(p_property, p_value):
 		else:
 			var res = _instantiate_script(p_value) if p_value is Script else p_value
 			_class_type.res = res
-			if res and _class_type.is_type(_type):
+			if res and _class_type.is_type(_value_type):
 				_data[index] = res
 		return true
 	return false
 
 func _get_property_list() -> Array:
 	var list = []
-	if not _type:
+	if not _value_type:
 		return list
 	
 	list.append(PropertyInfo.new_array(PREFIX, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE).to_dict())
 	
 	list.append(PropertyInfo.new_group(PREFIX, PREFIX).to_dict())
-	list.append(PropertyInfo.new_subclass_dropdown(PREFIX, _type.resource_path, "_on_inspector_add_element").to_dict())
+	list.append(PropertyInfo.new_custom_control("_generate_dropdown_selector", PREFIX).to_dict())
+	list.append(PropertyInfo.new_subclass_dropdown(PREFIX, _value_type.resource_path, "_on_inspector_add_element").to_dict())
 	if _data.empty():
 		list.append(PropertyInfo.new_nil(PREFIX + EMPTY_ENTRY).to_dict())
 	for an_index in _data.size():
@@ -68,12 +69,12 @@ func _add_element(script) -> void:
 	_data.append(script.new())
 
 func _refresh_data() -> void:
-	if _type == null:
+	if _value_type == null:
 		clear()
 		return
 	var data_cache := _data.duplicate()
 	for a_resource in data_cache:
-		if not ClassType.new(a_resource).is_type(_type):
+		if not ClassType.new(a_resource).is_type(_value_type):
 			_data.erase(a_resource)
 
 ##### VIRTUALS #####
@@ -86,11 +87,6 @@ func clear() -> void:
 ##### PRIVATE METHODS #####
 
 ##### CONNECTIONS #####
-
-func _on_inspector_add_element(p_dropdown: OptionButton) -> void:
-	var index := p_dropdown.get_selected_id()
-	var type: Script = p_dropdown.get_item_metadata(index)
-	_add_element(type)
 
 ##### SETTERS AND GETTERS #####
 

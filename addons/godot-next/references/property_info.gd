@@ -63,14 +63,11 @@ static func new_resource(p_name: String, p_hint_string: String = "", p_usage: in
 
 ##### CUSTOM PROPERTIES #####
 
-static func new_button(p_name: String, p_callback: String, p_group: String = "") -> PropertyInfo:
-	return load(SELF_PATH).new(p_name, TYPE_OBJECT, PROPERTY_HINT_NONE, "$button$%s$%s" % [p_callback, p_group], PROPERTY_USAGE_EDITOR)
+static func new_button(p_label: String, p_callback: String, p_group: String = "") -> PropertyInfo:
+	return load(SELF_PATH).new(p_group + "button", TYPE_OBJECT, PROPERTY_HINT_NONE, "$button$%s$%s" % [p_label, p_callback], PROPERTY_USAGE_EDITOR)
 
-static func new_resource_dropdown(p_name: String, p_type: String, p_callback: String, p_group: String = "") -> PropertyInfo:
-	return load(SELF_PATH).new(p_name, TYPE_OBJECT, PROPERTY_HINT_NONE, "$dropdown_res$%s$%s$%s" % [p_type, p_callback, p_group], PROPERTY_USAGE_EDITOR)
+static func new_dropdown_selector(p_elements_callback: String, p_selected_callback, p_group: String = ""):
+	return load(SELF_PATH).new(p_group + "dropdown_selector", TYPE_OBJECT, PROPERTY_HINT_NONE, "$dropdown_selector$%s$%s" % [p_elements_callback, p_selected_callback], PROPERTY_USAGE_EDITOR)
 
-static func new_subclass_dropdown(p_name: String, p_type: String, p_callback: String, p_group: String = "") -> PropertyInfo:
-	return load(SELF_PATH).new(p_name, TYPE_OBJECT, PROPERTY_HINT_NONE, "$dropdown_sub$%s$%s$%s" % [p_type, p_callback, p_group], PROPERTY_USAGE_EDITOR)
-
-static func new_type_dropdown(p_name: String, p_group: String = ""):
-	return load(SELF_PATH).new(p_name, TYPE_OBJECT, PROPERTY_HINT_NONE, "$dropdown_type$%s" % p_group, PROPERTY_USAGE_EDITOR)
+static func new_custom_control(p_gui_callback: String, p_group: String = ""):
+	return load(SELF_PATH).new(p_group + "custom_control", TYPE_OBJECT, PROPERTY_HINT_NONE, "$custom_control$%s" % p_gui_callback, PROPERTY_USAGE_EDITOR)

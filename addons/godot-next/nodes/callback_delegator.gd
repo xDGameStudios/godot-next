@@ -105,7 +105,7 @@ func add_element(p_type: Script) -> Resource:
 	var elements = _elements.get_data()
 	
 	_class_type.res = p_type
-	if not _class_type.is_type(_elements.get_base_type()):
+	if not _class_type.is_type(_elements.get_value_type()):
 		return null
 	if has_element(p_type):
 		return get_element(p_type)

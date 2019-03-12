@@ -49,13 +49,13 @@ func _set(p_property: String, p_value) -> bool:
 
 func _get_property_list() -> Array:
 	var list := []
-	if not _type:
+	if not _value_type:
 		return list
 	
-	list.append(PropertyInfo.new_dictionary(PREFIX, PROPERTY_HINT_RESOURCE_TYPE, "", PROPERTY_USAGE_STORAGE).to_dict())
+	list.append(PropertyInfo.new_dictionary(PREFIX, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE).to_dict())
 	
 	list.append(PropertyInfo.new_group(PREFIX, PREFIX).to_dict())
-	list.append(PropertyInfo.new_subclass_dropdown(PREFIX + "dropdown", _type.resource_path, "_on_inspector_add_element").to_dict())
+	list.append(PropertyInfo.new_dropdown_selector("_on_fetch_inheritors", "_on_selector_selected", PREFIX).to_dict())
 	if _data.empty():
 		list.append(PropertyInfo.new_nil(PREFIX + EMPTY_ENTRY).to_dict())
 	for a_typename in _data:
@@ -74,13 +74,13 @@ func _add_element(p_script: Script) -> void:
 			property_list_changed_notify()
 
 func _refresh_data() -> void:
-	if _type == null:
+	if _value_type == null:
 		clear()
 		return
 	var typenames := _data.keys()
 	for a_typename in typenames:
 		#_class_type.res = _data[a_typename]
-		if not ClassType.new(_data[a_typename]).is_type(_type):
+		if not ClassType.new(_data[a_typename]).is_type(_value_type):
 			#warning-ignore:return_value_discarded
 			_data.erase(a_typename)
 
@@ -95,10 +95,18 @@ func clear() -> void:
 
 ##### CONNECTIONS #####
 
-func _on_inspector_add_element(p_dropdown: OptionButton) -> void:
-	var index := p_dropdown.get_selected_id()
-	var type: Script = p_dropdown.get_item_metadata(index)
-	_add_element(type)
+func _on_fetch_inheritors() -> Dictionary:
+	_class_type.res = _value_type
+	var list = _class_type.get_deep_inheritors_list()
+	var type_map = _class_type.get_deep_type_map()
+	var inheritors = { }
+	for a_name in list:
+		inheritors[a_name] = load(type_map[a_name].path)
+	return inheritors
+
+func _on_selector_selected(dropdown_selector):
+	var script = dropdown_selector.get_selected_meta()
+	_add_element(script)
 
 ##### SETTERS AND GETTERS #####
 

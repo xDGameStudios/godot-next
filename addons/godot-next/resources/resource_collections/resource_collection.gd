@@ -17,7 +17,7 @@ const EMPTY_ENTRY = "[ Empty ]"
 
 ##### PROPERTIES #####
 
-var _type: Script = null
+var _value_type: Script = null
 var _type_readonly: bool = false
 #warning-ignore:unused_class_variable
 var _class_type: ClassType = ClassType.new()
@@ -25,15 +25,15 @@ var _class_type: ClassType = ClassType.new()
 ##### NOTIFICATIONS #####
 
 func _get(p_property: String):
-	if p_property == "base_type":
-		return _type
+	if p_property == "setup_value_type":
+		return _value_type
 	return null
 
 func _set(p_property: String, p_value) -> bool:
-	if p_property == "base_type":
-		if _type == p_value:
+	if p_property == "setup_value_type":
+		if _value_type == p_value:
 			return true
-		_type = p_value
+		_value_type = p_value
 		_refresh_data()
 		if Engine.editor_hint:
 			property_list_changed_notify()
@@ -41,7 +41,11 @@ func _set(p_property: String, p_value) -> bool:
 	return false
 
 func _get_property_list() -> Array:
-	return [ PropertyInfo.new_resource("base_type", "Script").to_dict() ] if not _type_readonly else []
+	var list := [];
+	if not _type_readonly:
+		list.append(PropertyInfo.new_group("setup", "setup_").to_dict())
+		list.append(PropertyInfo.new_resource("setup_value_type", "Script").to_dict())
+	return list
 
 ##### OVERRIDES #####
 
@@ -63,6 +67,21 @@ func clear() -> void:
 
 ##### PRIVATE METHODS #####
 
+##### PRIVATE METHODS #####
+
+func _generate_dropdown_selector() -> Control:
+	var inheritors := _find_inheritors(_value_type)
+	return InspectorControls.new_dropdown_selector(inheritors, self, "_on_dropdown_selector_selected")
+
+func _find_inheritors(p_type: Script) -> Dictionary:
+	_class_type.res = p_type
+	var list = _class_type.get_deep_inheritors_list()
+	var type_map = _class_type.get_deep_type_map()
+	var inheritors = { }
+	for a_name in list:
+		inheritors[a_name] = load(type_map[a_name].path)
+	return inheritors
+
 func _instantiate_script(p_script: Script) -> Resource:
 	var res: Resource = null
 	if ClassDB.is_parent_class(p_script.get_instance_base_type(), "Resource"):
@@ -74,24 +93,28 @@ func _instantiate_script(p_script: Script) -> Resource:
 
 ##### CONNECTIONS #####
 
+func _on_dropdown_selector_selected(dropdown_selector):
+	var script = dropdown_selector.get_selected_meta()
+	_add_element(script)
+
 ##### SETTERS AND GETTERS #####
 
-func get_base_type() -> Script:
-	return _type
+func get_value_type() -> Script:
+	return _value_type
 
-func set_base_type(p_type: Script) -> void:
-	if _type == p_type:
+func set_value_type(p_type: Script) -> void:
+	if _value_type == p_type:
 		return
-	_type = p_type
+	_value_type = p_type
 	if Engine.editor_hint:
 		property_list_changed_notify()
 
 func is_type_readonly() -> bool:
 	return _type_readonly
 
-func set_type_readonly(read_only: bool) -> void:
-	if _type_readonly == read_only:
+func set_type_readonly(p_readonly: bool) -> void:
+	if _type_readonly == p_readonly:
 		return
-	_type_readonly = read_only
+	_type_readonly = p_readonly
 	if Engine.editor_hint:
 		property_list_changed_notify()
