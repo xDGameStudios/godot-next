@@ -8,13 +8,18 @@
 tool
 extends EditorInspectorPlugin
 
-var obj_stack: Array
+var obj_stack: Array = []
+var inspector_stack: Array = []
 
 #warning-ignore:unused_argument
 func can_handle(p_object: Object) -> bool:
 	return true
 
 func parse_begin(p_object: Object) -> void:
+	var dummy = Control.new()
+	dummy.connect("tree_entered", self, "_on_dummy_tree_entered", [dummy])
+	add_custom_control(dummy)
+	
 	obj_stack.push_back(p_object)
 	if p_object.has_method("_parse_begin"):
 		p_object._parse_begin(self)
@@ -24,7 +29,7 @@ func parse_category(p_object: Object, p_category: String) -> void:
 		p_object._parse_category(self, p_category)
 
 func parse_property(p_object: Object, p_type: int, p_path: String, p_hint: int, p_hint_text: String, p_usage: int) -> bool:
-	if p_object.has_method("_parse_property"):
+	if p_object and p_object.has_method("_parse_property"):
 		var pinfo = PropertyInfo.new(p_path, p_type, p_hint, p_hint_text, p_usage)
 		return p_object._parse_property(self, pinfo)
 	return false
@@ -33,3 +38,14 @@ func parse_end() -> void:
 	var obj = obj_stack.pop_back()
 	if obj.has_method("_parse_end"):
 		obj._parse_end(self)
+	inspector_stack.pop_back()
+
+func _on_dummy_tree_entered(control: Control) -> void:
+	var parent = control.get_parent()
+	while parent and not parent is EditorInspector:
+		parent = parent.get_parent()
+	inspector_stack.push_back(parent)
+
+func get_inspector() -> EditorInspector:
+	return inspector_stack.back()
+
