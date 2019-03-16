@@ -65,7 +65,7 @@ func _ready() -> void:
 	_handle_notification("_ready")
 
 # Initialize every element and de-activate any non-essential CallbackDelegator notifications.
-func _enter_tree() -> void:	
+func _enter_tree() -> void:
 	var elements = _elements.get_data().values()
 	for an_element in elements:
 		if not an_element.owner:
